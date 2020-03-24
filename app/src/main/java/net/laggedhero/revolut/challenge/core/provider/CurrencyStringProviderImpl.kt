@@ -1,11 +1,11 @@
-package net.laggedhero.revolut.challenge.provider
+package net.laggedhero.revolut.challenge.core.provider
 
 import android.app.Application
 import android.content.Context
 import net.laggedhero.revolut.challenge.R
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 
-class CurrencyStringProviderImpl(application: Application) : CurrencyStringProvider {
+internal class CurrencyStringProviderImpl(application: Application) : CurrencyStringProvider {
 
     private val context: Context = application.applicationContext
 

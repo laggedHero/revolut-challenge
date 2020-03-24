@@ -1,4 +1,4 @@
-package net.laggedhero.revolut.challenge.provider
+package net.laggedhero.revolut.challenge.core.provider
 
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 
