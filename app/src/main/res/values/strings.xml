@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Revolut Challenge</string>
 
+    <string name="generic_loading_error">Please, try again later</string>
+
     <!-- Currency list from: https://www.iban.com/currency-codes -->
     <string name="currency_aed">UAE Dirham</string>
     <string name="currency_afn">Afghani</string>
