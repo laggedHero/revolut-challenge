@@ -4,7 +4,7 @@ import io.reactivex.Single
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.domain.*
 
-class CurrencyRepositoryImpl(
+internal class CurrencyRepositoryImpl(
     private val currencyApi: CurrencyApi
 ) : CurrencyRepository {
     override fun ratesFor(currencyCode: CurrencyCode): Single<Rates> {
