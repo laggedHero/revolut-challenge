@@ -9,6 +9,10 @@ internal class SchedulerProviderImpl : SchedulerProvider {
         return Schedulers.io()
     }
 
+    override fun computation(): Scheduler {
+        return Schedulers.computation()
+    }
+
     override fun ui(): Scheduler {
         return AndroidSchedulers.mainThread()
     }

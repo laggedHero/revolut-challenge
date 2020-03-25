@@ -11,6 +11,10 @@ class FakeSchedulerProvider(
         return scheduler
     }
 
+    override fun computation(): Scheduler {
+        return scheduler
+    }
+
     override fun ui(): Scheduler {
         return scheduler
     }
