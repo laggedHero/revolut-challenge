@@ -7,8 +7,7 @@ import net.laggedhero.revolut.challenge.core.provider.FakeSchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.FakeStringProvider
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.FakeCurrencyCodeProvider
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
-import net.laggedhero.revolut.challenge.feature.rates.domain.FakeCurrencyRepository
+import net.laggedhero.revolut.challenge.feature.rates.domain.*
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -42,15 +41,13 @@ class RatesViewModelTest {
         val testScheduler = TestScheduler()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(
-                Single.error(Throwable("Error"))
-            ),
+            FakeCurrencyRepository { Single.error(Throwable("Error")) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider({ "Error message" }),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
         )
 
-        testScheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
         Assert.assertEquals(
             RatesState(
@@ -61,5 +58,217 @@ class RatesViewModelTest {
             ),
             sut.state.value
         )
+    }
+
+    @Test
+    fun `api failure does not break the chain`() {
+        val testScheduler = TestScheduler()
+
+        val rates = Factory.createRates()
+
+        var counter = 0
+        val testSingleProducer = {
+            when (counter) {
+                1 -> {
+                    counter++
+                    Single.error(Throwable("Error"))
+                }
+                else -> {
+                    counter++
+                    Single.just(rates)
+                }
+            }
+        }
+
+        val sut = RatesViewModel(
+            FakeCurrencyRepository(testSingleProducer),
+            FakeSchedulerProvider(testScheduler),
+            FakeStringProvider({ "Error message" }),
+            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+        )
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+        Assert.assertNull(sut.state.value.error)
+
+        testScheduler.advanceTimeBy(1, TimeUnit.SECONDS)
+        Assert.assertNotNull(sut.state.value.error)
+
+        testScheduler.advanceTimeBy(2, TimeUnit.SECONDS)
+        Assert.assertNull(sut.state.value.error)
+    }
+
+    @Test
+    fun `returns with a rates object when api succeeds`() {
+        val testScheduler = TestScheduler()
+
+        val rates = Factory.createRates()
+
+        val sut = RatesViewModel(
+            FakeCurrencyRepository { Single.just(rates) },
+            FakeSchedulerProvider(testScheduler),
+            FakeStringProvider(),
+            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+        )
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+        Assert.assertEquals(rates, sut.state.value.rates)
+    }
+
+    @Test
+    fun `returns with an updated rates object when applying a conversion`() {
+        val testScheduler = TestScheduler()
+
+        val rates = Factory.createRates()
+
+        val expectedRates = Factory.createRates(
+            Factory.createCurrency(CurrencyCode.EUR, 1F, 2F),
+            listOf(
+                Factory.createCurrency(CurrencyCode.USD, 1.13F, 2.26F)
+            )
+        )
+
+        val sut = RatesViewModel(
+            FakeCurrencyRepository { Single.just(rates) },
+            FakeSchedulerProvider(testScheduler),
+            FakeStringProvider(),
+            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+        )
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+
+        sut.applyCurrencyConversion(CurrencyConversion(2F))
+
+        Assert.assertEquals(expectedRates, sut.state.value.rates)
+    }
+
+    @Test
+    fun `returns with an updated rates object when selecting a currency code`() {
+        val testScheduler = TestScheduler()
+
+        val eurRates = Factory.createRates()
+
+        val usdRates = Factory.createRates(
+            Factory.createCurrency(CurrencyCode.USD, 1F, 1F),
+            listOf(
+                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 0.9F)
+            )
+        )
+
+        var counter = 0
+        val testSingleProducer = {
+            when (counter) {
+                1 -> {
+                    counter++
+                    Single.just(usdRates)
+                }
+                else -> {
+                    counter++
+                    Single.just(eurRates)
+                }
+            }
+        }
+
+        val expectedRates = Factory.createRates(
+            Factory.createCurrency(CurrencyCode.USD, 1F, 1F),
+            listOf(
+                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 0.9F)
+            )
+        )
+
+        val sut = RatesViewModel(
+            FakeCurrencyRepository(testSingleProducer),
+            FakeSchedulerProvider(testScheduler),
+            FakeStringProvider(),
+            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+        )
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+
+        sut.selectCurrencyCode(CurrencyCode.USD)
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+
+        Assert.assertEquals(expectedRates, sut.state.value.rates)
+    }
+
+    @Test
+    fun `when changing currency the conversion is kept`() {
+        val testScheduler = TestScheduler()
+
+        val eurRates = Factory.createRates()
+
+        val usdRates = Factory.createRates(
+            Factory.createCurrency(CurrencyCode.USD, 1F, 1F),
+            listOf(
+                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 0.9F)
+            )
+        )
+
+        var counter = 0
+        val testSingleProducer = {
+            when (counter) {
+                1 -> {
+                    counter++
+                    Single.just(usdRates)
+                }
+                else -> {
+                    counter++
+                    Single.just(eurRates)
+                }
+            }
+        }
+
+        val expectedRates = Factory.createRates(
+            Factory.createCurrency(CurrencyCode.USD, 1F, 2F),
+            listOf(
+                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 1.8F)
+            )
+        )
+
+        val sut = RatesViewModel(
+            FakeCurrencyRepository(testSingleProducer),
+            FakeSchedulerProvider(testScheduler),
+            FakeStringProvider(),
+            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+        )
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+
+        sut.applyCurrencyConversion(CurrencyConversion(2F))
+        sut.selectCurrencyCode(CurrencyCode.USD)
+
+        testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
+
+        Assert.assertEquals(expectedRates, sut.state.value.rates)
+    }
+
+    object Factory {
+        fun createRates(
+            baseCurrency: Currency = createCurrency(
+                CurrencyCode.EUR, 1F, 1F
+            ),
+            rates: List<Currency> = listOf(
+                createCurrency(
+                    CurrencyCode.USD, 1.13F, 1.13F
+                )
+            )
+        ): Rates {
+            return Rates(
+                baseCurrency = baseCurrency,
+                rates = rates
+            )
+        }
+
+        fun createCurrency(
+            code: CurrencyCode,
+            rate: Float,
+            conversion: Float
+        ): Currency {
+            return Currency(
+                code,
+                CurrencyReferenceRate(rate),
+                CurrencyConversion(conversion)
+            )
+        }
     }
 }

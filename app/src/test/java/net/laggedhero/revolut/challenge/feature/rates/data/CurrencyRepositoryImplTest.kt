@@ -1,6 +1,7 @@
 package net.laggedhero.revolut.challenge.feature.rates.data
 
 import io.reactivex.Single
+import net.laggedhero.revolut.challenge.core.Result
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.domain.Currency
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
@@ -20,7 +21,7 @@ class CurrencyRepositoryImplTest {
         val sut = CurrencyRepositoryImpl(api)
 
         sut.ratesFor(CurrencyCode.EUR).test()
-            .assertError(error)
+            .assertValue(Result.Failure(error))
             .dispose()
     }
 
@@ -55,7 +56,7 @@ class CurrencyRepositoryImplTest {
         val sut = CurrencyRepositoryImpl(api)
 
         sut.ratesFor(CurrencyCode.EUR).test()
-            .assertValue(expectedRates)
+            .assertValue(Result.Success(expectedRates))
             .dispose()
     }
 }

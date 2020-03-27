@@ -6,8 +6,12 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.functions.BiFunction
 import io.reactivex.subjects.BehaviorSubject
 import net.laggedhero.revolut.challenge.R
+import net.laggedhero.revolut.challenge.core.Result
 import net.laggedhero.revolut.challenge.core.livedata.KLiveData
 import net.laggedhero.revolut.challenge.core.livedata.KMutableLiveData
+import net.laggedhero.revolut.challenge.core.map
+import net.laggedhero.revolut.challenge.core.onFailure
+import net.laggedhero.revolut.challenge.core.onSuccess
 import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
@@ -41,42 +45,61 @@ class RatesViewModel(
                 appliedCurrencyConversion = CurrencyConversion(1F)
             )
         )
-        currencyCodeSource.onNext(currentCurrencyCode)
-        observe()
+        selectCurrencyCode(currentCurrencyCode)
+        applyCurrencyConversion(CurrencyConversion(1F))
     }
 
     private fun observe() {
-        disposable = Observable.interval(1, TimeUnit.SECONDS, schedulerProvider.computation())
-            .withLatestFrom(
-                currencyCodeSource,
-                BiFunction<Long, CurrencyCode, Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> { _, currencyCode ->
-                    Pair(currencyCode, curriedRatesState(currencyCode))
-                }
-            )
-            .observeOn(schedulerProvider.io())
-            .doOnEach {
-                val state = _state.value.copy(loading = true)
-                _state.postValue(state)
+        disposable = Observable.combineLatest(
+            timedCurrencySource()
+                .doOnEach { notifyLoading() }
+                .flatMap { pair -> currencyRepositorySource(pair.first, pair.second) },
+            appliedConversionSource,
+            BiFunction<Result<(CurrencyConversion) -> RatesState>, CurrencyConversion, Result<RatesState>> { result, conversion ->
+                result.map { it(conversion) }
             }
-            .flatMap { pair ->
-                currencyRepository.ratesFor(pair.first)
-                    .map { pair.second(it) }
-                    .toObservable()
+        )
+            .onErrorReturn { Result.Failure(it) }
+            .subscribe { result ->
+                result
+                    .onSuccess { _state.postValue(it) }
+                    .onFailure {
+                        val state = _state.value.copy(
+                            loading = false,
+                            error = stringProvider.getString(R.string.generic_loading_error)
+                        )
+                        _state.postValue(state)
+                    }
             }
-            .withLatestFrom(
-                appliedConversionSource,
-                BiFunction<(CurrencyConversion) -> RatesState, CurrencyConversion, RatesState> { curriedRatesState, conversion ->
-                    curriedRatesState(conversion)
-                }
-            )
-            .observeOn(schedulerProvider.computation())
-            .onErrorReturn {
-                _state.value.copy(
-                    loading = false,
-                    error = stringProvider.getString(R.string.generic_loading_error)
-                )
+    }
+
+    private fun timedCurrencySource(): Observable<Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> {
+        return Observable.combineLatest(
+            intervalSource(),
+            currencyCodeSource,
+            BiFunction<Long, CurrencyCode, Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> { _, currencyCode ->
+                Pair(currencyCode, curriedRatesState(currencyCode))
             }
-            .subscribe { state -> _state.postValue(state) }
+        )
+    }
+
+    private fun intervalSource(): Observable<Long> {
+        return Observable.interval(0, 1, TimeUnit.SECONDS, schedulerProvider.computation())
+    }
+
+    private fun notifyLoading() {
+        val state = _state.value.copy(loading = true)
+        _state.postValue(state)
+    }
+
+    private fun currencyRepositorySource(
+        currencyCode: CurrencyCode,
+        curriedState: (Rates) -> (CurrencyConversion) -> RatesState
+    ): Observable<Result<(CurrencyConversion) -> RatesState>> {
+        return currencyRepository.ratesFor(currencyCode)
+            .map { result -> result.map { curriedState(it) } }
+            .subscribeOn(schedulerProvider.io())
+            .toObservable()
     }
 
     fun selectCurrencyCode(currencyCode: CurrencyCode) {

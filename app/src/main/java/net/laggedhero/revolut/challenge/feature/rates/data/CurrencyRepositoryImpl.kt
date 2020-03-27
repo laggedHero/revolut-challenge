@@ -1,6 +1,7 @@
 package net.laggedhero.revolut.challenge.feature.rates.data
 
 import io.reactivex.Single
+import net.laggedhero.revolut.challenge.core.Result
 import net.laggedhero.revolut.challenge.core.extension.toCurrencyCode
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.domain.*
@@ -8,9 +9,10 @@ import net.laggedhero.revolut.challenge.feature.rates.domain.*
 internal class CurrencyRepositoryImpl(
     private val currencyApi: CurrencyApi
 ) : CurrencyRepository {
-    override fun ratesFor(currencyCode: CurrencyCode): Single<Rates> {
+    override fun ratesFor(currencyCode: CurrencyCode): Single<Result<Rates>> {
         return currencyApi.latestRates(currencyCode.value)
-            .map { it.toRates() }
+            .map<Result<Rates>> { Result.Success(it.toRates()) }
+            .onErrorReturn { Result.Failure(it) }
     }
 
     private fun CurrencyRatesDto.toRates(): Rates {
