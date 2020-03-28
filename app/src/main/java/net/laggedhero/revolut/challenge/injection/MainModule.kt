@@ -17,6 +17,7 @@ import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProvider
 import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProviderImpl
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
 import net.laggedhero.revolut.challenge.feature.rates.ui.RatesFragment
+import net.laggedhero.revolut.challenge.feature.rates.ui.RatesUiMapper
 import net.laggedhero.revolut.challenge.feature.rates.ui.RatesViewModel
 import javax.inject.Provider
 
@@ -27,9 +28,10 @@ object MainModule {
     @IntoMap
     @FragmentKey(RatesFragment::class)
     fun providesRatesFragment(
-        viewModelFactory: ViewModelProvider.Factory
+        viewModelFactory: ViewModelProvider.Factory,
+        ratesUiMapper: RatesUiMapper
     ): Fragment {
-        return RatesFragment(viewModelFactory)
+        return RatesFragment(viewModelFactory, ratesUiMapper)
     }
 
     @Provides
@@ -77,5 +79,10 @@ object MainModule {
     @Provides
     fun providesCurrencyCodeProvider(): CurrencyCodeProvider {
         return CurrencyCodeProviderImpl()
+    }
+
+    @Provides
+    fun providesRatesUiMapper(stringProvider: StringProvider): RatesUiMapper {
+        return RatesUiMapper(stringProvider)
     }
 }
