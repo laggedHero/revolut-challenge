@@ -1,2 +1,5 @@
 rootProject.name='Revolut Challenge'
 include ':app'
+include ':core'
+include ':feature-rates'
+include ':core-test'

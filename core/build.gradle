@@ -1,4 +1,4 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -8,13 +8,13 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        applicationId "net.laggedhero.revolut.challenge"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
     }
 
     buildTypes {
@@ -33,43 +33,26 @@ android {
         jvmTarget = "1.8"
     }
 
-    viewBinding {
-        enabled = true
-    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation project(":core")
-    implementation project(":feature-rates")
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
-
-    // Material Components
-    implementation "com.google.android.material:material:$material_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_livedata_ktx_version"
 
     // Dagger
     implementation "com.google.dagger:dagger:$dagger_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     // RxJava2
+    implementation "io.reactivex.rxjava2:rxandroid:$rx_android_version"
     implementation "io.reactivex.rxjava2:rxjava:$rx_java_version"
 
-    // Retrofit
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
-
-    // Gson
-    implementation "com.google.code.gson:gson:$gson_version"
-
     testImplementation "junit:junit:$junit_version"
-    testImplementation "androidx.arch.core:core-testing:$androidx_core_testing_version"
 
     androidTestImplementation "androidx.test.ext:junit:$androidx_junit_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
