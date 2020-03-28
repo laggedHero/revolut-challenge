@@ -2,16 +2,16 @@ package net.laggedhero.revolut.challenge.feature.rates.ui
 
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
-import net.laggedhero.revolut.challenge.feature.rates.domain.Currency
+import net.laggedhero.revolut.challenge.feature.rates.domain.Rate
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
 import java.util.*
 
 class RatesUiMapper(private val stringProvider: StringProvider) {
     fun map(rates: Rates): List<RatesListUiItem> {
-        return listOf(rates.baseCurrency.toRatesListUiItem()) + rates.rates.map { it.toRatesListUiItem() }
+        return listOf(rates.baseRate.toRatesListUiItem()) + rates.rates.map { it.toRatesListUiItem() }
     }
 
-    private fun Currency.toRatesListUiItem(): RatesListUiItem {
+    private fun Rate.toRatesListUiItem(): RatesListUiItem {
         return RatesListUiItem(
             flagUrl = currencyCode.toFlagUrl(),
             currencyCode = currencyCode.value,

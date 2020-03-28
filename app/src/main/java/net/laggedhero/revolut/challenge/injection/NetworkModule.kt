@@ -4,9 +4,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
-import net.laggedhero.revolut.challenge.feature.rates.data.CurrencyApi
-import net.laggedhero.revolut.challenge.feature.rates.data.CurrencyRepositoryImpl
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
+import net.laggedhero.revolut.challenge.feature.rates.data.RatesApi
+import net.laggedhero.revolut.challenge.feature.rates.data.RateRepositoryImpl
+import net.laggedhero.revolut.challenge.feature.rates.domain.RateRepository
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
@@ -41,12 +41,12 @@ object NetworkModule {
     }
 
     @Provides
-    fun providesCurrencyApi(retrofit: Retrofit): CurrencyApi {
-        return retrofit.create(CurrencyApi::class.java)
+    fun providesCurrencyApi(retrofit: Retrofit): RatesApi {
+        return retrofit.create(RatesApi::class.java)
     }
 
     @Provides
-    fun providesCurrencyRepository(currencyApi: CurrencyApi): CurrencyRepository {
-        return CurrencyRepositoryImpl(currencyApi)
+    fun providesCurrencyRepository(ratesApi: RatesApi): RateRepository {
+        return RateRepositoryImpl(ratesApi)
     }
 }

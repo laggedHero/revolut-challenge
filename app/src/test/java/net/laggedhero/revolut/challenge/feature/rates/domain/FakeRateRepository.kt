@@ -4,9 +4,9 @@ import io.reactivex.Single
 import net.laggedhero.revolut.challenge.core.Result
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 
-class FakeCurrencyRepository(
+class FakeRateRepository(
     private val ratesFor: () -> Single<Rates> = { Single.error(Throwable("undefined")) }
-) : CurrencyRepository {
+) : RateRepository {
     override fun ratesFor(currencyCode: CurrencyCode): Single<Result<Rates>> {
         return ratesFor.invoke()
             .map<Result<Rates>> { Result.Success(it) }

@@ -6,32 +6,32 @@ import net.laggedhero.revolut.challenge.core.extension.toCurrencyCode
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.domain.*
 
-internal class CurrencyRepositoryImpl(
-    private val currencyApi: CurrencyApi
-) : CurrencyRepository {
+internal class RateRepositoryImpl(
+    private val ratesApi: RatesApi
+) : RateRepository {
     override fun ratesFor(currencyCode: CurrencyCode): Single<Result<Rates>> {
-        return currencyApi.latestRates(currencyCode.value)
+        return ratesApi.latestRates(currencyCode.value)
             .map<Result<Rates>> { Result.Success(it.toRates()) }
             .onErrorReturn { Result.Failure(it) }
     }
 
-    private fun CurrencyRatesDto.toRates(): Rates {
+    private fun RatesDto.toRates(): Rates {
         return Rates(
-            baseCurrency = Currency(
+            baseRate = Rate(
                 currencyCode = baseCurrency.toCurrencyCode(),
-                referenceRate = CurrencyReferenceRate(1F),
-                appliedConversion = CurrencyConversion(1F)
+                referenceRate = ReferenceRate(1F),
+                appliedConversion = ConversionRate(1F)
             ),
             rates = rates.toCurrencyList()
         )
     }
 
-    private fun Map<String, Float>.toCurrencyList(): List<Currency> {
+    private fun Map<String, Float>.toCurrencyList(): List<Rate> {
         return map {
-            Currency(
+            Rate(
                 currencyCode = it.key.toCurrencyCode(),
-                referenceRate = CurrencyReferenceRate(it.value),
-                appliedConversion = CurrencyConversion(it.value)
+                referenceRate = ReferenceRate(it.value),
+                appliedConversion = ConversionRate(it.value)
             )
         }
     }

@@ -24,14 +24,14 @@ class RatesViewModelTest {
         val testScheduler = TestScheduler()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(),
+            FakeRateRepository(),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
         )
 
         Assert.assertEquals(
-            RatesState(true, CurrencyCode.EUR, CurrencyConversion(1F)),
+            RatesState(true, CurrencyCode.EUR, ConversionRate(1F)),
             sut.state.value
         )
     }
@@ -41,7 +41,7 @@ class RatesViewModelTest {
         val testScheduler = TestScheduler()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository { Single.error(Throwable("Error")) },
+            FakeRateRepository { Single.error(Throwable("Error")) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider({ "Error message" }),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
@@ -53,7 +53,7 @@ class RatesViewModelTest {
             RatesState(
                 loading = false,
                 selectedCurrencyCode = CurrencyCode.EUR,
-                appliedCurrencyConversion = CurrencyConversion(1F),
+                appliedCurrencyConversion = ConversionRate(1F),
                 error = "Error message"
             ),
             sut.state.value
@@ -81,7 +81,7 @@ class RatesViewModelTest {
         }
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(testSingleProducer),
+            FakeRateRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider({ "Error message" }),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
@@ -104,7 +104,7 @@ class RatesViewModelTest {
         val rates = Factory.createRates()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository { Single.just(rates) },
+            FakeRateRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
@@ -128,7 +128,7 @@ class RatesViewModelTest {
         )
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository { Single.just(rates) },
+            FakeRateRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
@@ -136,7 +136,7 @@ class RatesViewModelTest {
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
-        sut.applyCurrencyConversion(CurrencyConversion(2F))
+        sut.applyCurrencyConversion(ConversionRate(2F))
 
         Assert.assertEquals(expectedRates, sut.state.value.rates)
     }
@@ -176,7 +176,7 @@ class RatesViewModelTest {
         )
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(testSingleProducer),
+            FakeRateRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
@@ -226,7 +226,7 @@ class RatesViewModelTest {
         )
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(testSingleProducer),
+            FakeRateRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyCodeProvider(CurrencyCode.EUR)
@@ -234,7 +234,7 @@ class RatesViewModelTest {
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
-        sut.applyCurrencyConversion(CurrencyConversion(2F))
+        sut.applyCurrencyConversion(ConversionRate(2F))
         sut.selectCurrencyCode(CurrencyCode.USD)
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -244,17 +244,17 @@ class RatesViewModelTest {
 
     object Factory {
         fun createRates(
-            baseCurrency: Currency = createCurrency(
+            baseRate: Rate = createCurrency(
                 CurrencyCode.EUR, 1F, 1F
             ),
-            rates: List<Currency> = listOf(
+            rates: List<Rate> = listOf(
                 createCurrency(
                     CurrencyCode.USD, 1.13F, 1.13F
                 )
             )
         ): Rates {
             return Rates(
-                baseCurrency = baseCurrency,
+                baseRate = baseRate,
                 rates = rates
             )
         }
@@ -263,11 +263,11 @@ class RatesViewModelTest {
             code: CurrencyCode,
             rate: Float,
             conversion: Float
-        ): Currency {
-            return Currency(
+        ): Rate {
+            return Rate(
                 code,
-                CurrencyReferenceRate(rate),
-                CurrencyConversion(conversion)
+                ReferenceRate(rate),
+                ConversionRate(conversion)
             )
         }
     }

@@ -13,7 +13,7 @@ import com.google.android.material.snackbar.Snackbar
 import net.laggedhero.revolut.challenge.R
 import net.laggedhero.revolut.challenge.core.extension.toCurrencyCode
 import net.laggedhero.revolut.challenge.databinding.FragmentRatesBinding
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
+import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
 
 class RatesFragment(
     viewModelFactory: ViewModelProvider.Factory,
@@ -54,7 +54,7 @@ class RatesFragment(
     }
 
     private fun onApplyConversion(conversion: String) {
-        viewModel.applyCurrencyConversion(CurrencyConversion(conversion.toFloat()))
+        viewModel.applyCurrencyConversion(ConversionRate(conversion.toFloat()))
     }
 
     private fun observeState() {

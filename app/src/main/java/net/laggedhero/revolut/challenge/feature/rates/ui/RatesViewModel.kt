@@ -16,13 +16,13 @@ import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
 import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProvider
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
+import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
+import net.laggedhero.revolut.challenge.feature.rates.domain.RateRepository
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
 import java.util.concurrent.TimeUnit
 
 class RatesViewModel(
-    private val currencyRepository: CurrencyRepository,
+    private val rateRepository: RateRepository,
     private val schedulerProvider: SchedulerProvider,
     private val stringProvider: StringProvider,
     currencyCodeProvider: CurrencyCodeProvider
@@ -34,7 +34,7 @@ class RatesViewModel(
     private var disposable: Disposable? = null
 
     private val currencyCodeSource = BehaviorSubject.create<CurrencyCode>()
-    private val appliedConversionSource = BehaviorSubject.create<CurrencyConversion>()
+    private val appliedConversionSource = BehaviorSubject.create<ConversionRate>()
 
     init {
         val currentCurrencyCode = currencyCodeProvider.current()
@@ -42,11 +42,11 @@ class RatesViewModel(
             RatesState(
                 loading = true,
                 selectedCurrencyCode = currentCurrencyCode,
-                appliedCurrencyConversion = CurrencyConversion(1F)
+                appliedCurrencyConversion = ConversionRate(1F)
             )
         )
         selectCurrencyCode(currentCurrencyCode)
-        applyCurrencyConversion(CurrencyConversion(1F))
+        applyCurrencyConversion(ConversionRate(1F))
     }
 
     private fun observe() {
@@ -55,7 +55,7 @@ class RatesViewModel(
                 .doOnEach { notifyLoading() }
                 .flatMap { pair -> currencyRepositorySource(pair.first, pair.second) },
             appliedConversionSource,
-            BiFunction<Result<(CurrencyConversion) -> RatesState>, CurrencyConversion, Result<RatesState>> { result, conversion ->
+            BiFunction<Result<(ConversionRate) -> RatesState>, ConversionRate, Result<RatesState>> { result, conversion ->
                 result.map { it(conversion) }
             }
         )
@@ -73,11 +73,11 @@ class RatesViewModel(
             }
     }
 
-    private fun timedCurrencySource(): Observable<Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> {
+    private fun timedCurrencySource(): Observable<Pair<CurrencyCode, (Rates) -> (ConversionRate) -> RatesState>> {
         return Observable.combineLatest(
             intervalSource(),
             currencyCodeSource,
-            BiFunction<Long, CurrencyCode, Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> { _, currencyCode ->
+            BiFunction<Long, CurrencyCode, Pair<CurrencyCode, (Rates) -> (ConversionRate) -> RatesState>> { _, currencyCode ->
                 Pair(currencyCode, curriedRatesState(currencyCode))
             }
         )
@@ -94,9 +94,9 @@ class RatesViewModel(
 
     private fun currencyRepositorySource(
         currencyCode: CurrencyCode,
-        curriedState: (Rates) -> (CurrencyConversion) -> RatesState
-    ): Observable<Result<(CurrencyConversion) -> RatesState>> {
-        return currencyRepository.ratesFor(currencyCode)
+        curriedState: (Rates) -> (ConversionRate) -> RatesState
+    ): Observable<Result<(ConversionRate) -> RatesState>> {
+        return rateRepository.ratesFor(currencyCode)
             .map { result -> result.map { curriedState(it) } }
             .subscribeOn(schedulerProvider.io())
             .toObservable()
@@ -108,8 +108,8 @@ class RatesViewModel(
         observe()
     }
 
-    fun applyCurrencyConversion(currencyConversion: CurrencyConversion) {
-        appliedConversionSource.onNext(currencyConversion)
+    fun applyCurrencyConversion(conversionRate: ConversionRate) {
+        appliedConversionSource.onNext(conversionRate)
     }
 
     override fun onCleared() {
@@ -121,12 +121,12 @@ class RatesViewModel(
 data class RatesState(
     val loading: Boolean,
     val selectedCurrencyCode: CurrencyCode,
-    val appliedCurrencyConversion: CurrencyConversion,
+    val appliedCurrencyConversion: ConversionRate,
     val rates: Rates? = null,
     val error: String? = null
 )
 
-private val curriedRatesState: (CurrencyCode) -> (Rates) -> (CurrencyConversion) -> RatesState =
+private val curriedRatesState: (CurrencyCode) -> (Rates) -> (ConversionRate) -> RatesState =
     { currencyCode ->
         { rates ->
             { appliedConversion ->
@@ -140,12 +140,12 @@ private val curriedRatesState: (CurrencyCode) -> (Rates) -> (CurrencyConversion)
         }
     }
 
-private fun Rates.withConversion(appliedConversion: CurrencyConversion): Rates {
+private fun Rates.withConversion(appliedConversion: ConversionRate): Rates {
     return copy(
-        baseCurrency = baseCurrency.copy(appliedConversion = appliedConversion),
+        baseRate = baseRate.copy(appliedConversion = appliedConversion),
         rates = rates.map {
             it.copy(
-                appliedConversion = CurrencyConversion(it.referenceRate.value * appliedConversion.value)
+                appliedConversion = ConversionRate(it.referenceRate.value * appliedConversion.value)
             )
         }
     )
