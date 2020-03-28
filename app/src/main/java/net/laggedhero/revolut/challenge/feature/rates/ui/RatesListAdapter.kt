@@ -129,10 +129,3 @@ class RatesListAdapter(
         const val KEY_CURRENCY_CONVERSION = "KEY_CURRENCY_CONVERSION"
     }
 }
-
-data class RatesListUiItem(
-    val flagUrl: String,
-    val currencyCode: String,
-    val currencyName: String,
-    val currencyConversion: String
-)
