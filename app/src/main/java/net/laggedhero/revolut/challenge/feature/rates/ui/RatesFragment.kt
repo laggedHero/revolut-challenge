@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import net.laggedhero.revolut.challenge.R
 import net.laggedhero.revolut.challenge.core.extension.toCurrencyCode
 import net.laggedhero.revolut.challenge.databinding.FragmentRatesBinding
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
@@ -37,6 +39,7 @@ class RatesFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setUpRecyclerView()
         observeState()
+        binding.toolbar.title = context?.getString(R.string.feature_rates_title)
     }
 
     private fun setUpRecyclerView() {
@@ -56,7 +59,7 @@ class RatesFragment(
 
     private fun observeState() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
-            // TODO: show/hide loading
+            binding.progressBar.isVisible = state.loading
             state.error?.let {
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
             }
