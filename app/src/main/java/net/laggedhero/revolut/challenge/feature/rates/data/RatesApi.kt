@@ -4,8 +4,8 @@ import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface CurrencyApi {
+interface RatesApi {
 
     @GET("latest")
-    fun latestRates(@Query("base") base: String): Single<CurrencyRatesDto>
+    fun latestRates(@Query("base") base: String): Single<RatesDto>
 }

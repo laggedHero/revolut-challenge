@@ -4,6 +4,6 @@ import io.reactivex.Single
 import net.laggedhero.revolut.challenge.core.Result
 import java.util.*
 
-interface CurrencyRepository {
+interface RatesRepository {
     fun ratesFor(currency: Currency): Single<Result<Rates>>
 }

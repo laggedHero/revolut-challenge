@@ -16,13 +16,13 @@ import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
 import net.laggedhero.revolut.challenge.feature.rates.CurrencyProvider
 import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
+import net.laggedhero.revolut.challenge.feature.rates.domain.RatesRepository
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class RatesViewModel(
-    private val currencyRepository: CurrencyRepository,
+    private val ratesRepository: RatesRepository,
     private val schedulerProvider: SchedulerProvider,
     private val stringProvider: StringProvider,
     currencyProvider: CurrencyProvider
@@ -96,7 +96,7 @@ class RatesViewModel(
         currencyCode: Currency,
         curriedState: (Rates) -> (ConversionRate) -> RatesState
     ): Observable<Result<(ConversionRate) -> RatesState>> {
-        return currencyRepository.ratesFor(currencyCode)
+        return ratesRepository.ratesFor(currencyCode)
             .map { result -> result.map { curriedState(it) } }
             .subscribeOn(schedulerProvider.io())
             .toObservable()

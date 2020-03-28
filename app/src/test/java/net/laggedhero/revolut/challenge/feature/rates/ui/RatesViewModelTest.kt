@@ -24,7 +24,7 @@ class RatesViewModelTest {
         val testScheduler = TestScheduler()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(),
+            FakeRatesRepository(),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyProvider(Currency.getInstance("EUR"))
@@ -41,7 +41,7 @@ class RatesViewModelTest {
         val testScheduler = TestScheduler()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository { Single.error(Throwable("Error")) },
+            FakeRatesRepository { Single.error(Throwable("Error")) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider { "Error message" },
             FakeCurrencyProvider(Currency.getInstance("EUR"))
@@ -81,7 +81,7 @@ class RatesViewModelTest {
         }
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(testSingleProducer),
+            FakeRatesRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider { "Error message" },
             FakeCurrencyProvider(Currency.getInstance("EUR"))
@@ -104,7 +104,7 @@ class RatesViewModelTest {
         val rates = Factory.createRates()
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository { Single.just(rates) },
+            FakeRatesRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyProvider(Currency.getInstance("EUR"))
@@ -128,7 +128,7 @@ class RatesViewModelTest {
         )
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository { Single.just(rates) },
+            FakeRatesRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyProvider(Currency.getInstance("EUR"))
@@ -176,7 +176,7 @@ class RatesViewModelTest {
         )
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(testSingleProducer),
+            FakeRatesRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyProvider(Currency.getInstance("EUR"))
@@ -226,7 +226,7 @@ class RatesViewModelTest {
         )
 
         val sut = RatesViewModel(
-            FakeCurrencyRepository(testSingleProducer),
+            FakeRatesRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
             FakeCurrencyProvider(Currency.getInstance("EUR"))

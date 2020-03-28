@@ -9,16 +9,16 @@ import net.laggedhero.revolut.challenge.feature.rates.domain.ReferenceRate
 import org.junit.Test
 import java.util.*
 
-class CurrencyRepositoryImplTest {
+class RatesRepositoryImplTest {
 
     @Test
     fun `returns error when api fails`() {
         val error = Throwable("api error")
-        val api = FakeCurrencyApi(
+        val api = FakeRatesApi(
             latestRates = Single.error(error)
         )
 
-        val sut = CurrencyRepositoryImpl(api)
+        val sut = RatesRepositoryImpl(api)
 
         sut.ratesFor(Currency.getInstance("EUR")).test()
             .assertValue(Result.Failure(error))
@@ -27,14 +27,14 @@ class CurrencyRepositoryImplTest {
 
     @Test
     fun `returns rates when api return currency rates`() {
-        val currencyRatesDto = CurrencyRatesDto(
+        val currencyRatesDto = RatesDto(
             baseCurrency = "EUR",
             rates = mapOf(
                 "USD" to 1.13F
             )
         )
 
-        val api = FakeCurrencyApi(
+        val api = FakeRatesApi(
             latestRates = Single.just(currencyRatesDto)
         )
 
@@ -53,7 +53,7 @@ class CurrencyRepositoryImplTest {
             )
         )
 
-        val sut = CurrencyRepositoryImpl(api)
+        val sut = RatesRepositoryImpl(api)
 
         sut.ratesFor(Currency.getInstance("EUR")).test()
             .assertValue(Result.Success(expectedRates))

@@ -5,16 +5,16 @@ import net.laggedhero.revolut.challenge.core.Result
 import net.laggedhero.revolut.challenge.feature.rates.domain.*
 import java.util.*
 
-internal class CurrencyRepositoryImpl(
-    private val currencyApi: CurrencyApi
-) : CurrencyRepository {
+internal class RatesRepositoryImpl(
+    private val ratesApi: RatesApi
+) : RatesRepository {
     override fun ratesFor(currency: Currency): Single<Result<Rates>> {
-        return currencyApi.latestRates(currency.currencyCode)
+        return ratesApi.latestRates(currency.currencyCode)
             .map<Result<Rates>> { Result.Success(it.toRates()) }
             .onErrorReturn { Result.Failure(it) }
     }
 
-    private fun CurrencyRatesDto.toRates(): Rates {
+    private fun RatesDto.toRates(): Rates {
         return Rates(
             baseRate = Rate(
                 currency = Currency.getInstance(baseCurrency),
