@@ -11,9 +11,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import net.laggedhero.revolut.challenge.R
-import net.laggedhero.revolut.challenge.core.extension.toCurrencyCode
 import net.laggedhero.revolut.challenge.databinding.FragmentRatesBinding
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
+import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
+import java.util.*
 
 class RatesFragment(
     viewModelFactory: ViewModelProvider.Factory,
@@ -43,18 +43,18 @@ class RatesFragment(
     }
 
     private fun setUpRecyclerView() {
-        adapter = RatesListAdapter(::onSelectCurrency, ::onApplyConversion)
+        adapter = RatesListAdapter(::selectCurrency, ::applyConversionRate)
         binding.fragmentRatesRecyclerView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.fragmentRatesRecyclerView.adapter = adapter
     }
 
-    private fun onSelectCurrency(currency: String) {
-        viewModel.selectCurrencyCode(currency.toCurrencyCode())
+    private fun selectCurrency(currency: String) {
+        viewModel.selectCurrency(Currency.getInstance(currency))
     }
 
-    private fun onApplyConversion(conversion: String) {
-        viewModel.applyCurrencyConversion(CurrencyConversion(conversion.toFloat()))
+    private fun applyConversionRate(conversion: String) {
+        viewModel.applyConversionRate(ConversionRate(conversion.toFloat()))
     }
 
     private fun observeState() {

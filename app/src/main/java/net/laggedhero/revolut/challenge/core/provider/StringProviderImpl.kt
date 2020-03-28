@@ -4,9 +4,8 @@ import android.app.Application
 import android.content.Context
 
 internal class StringProviderImpl(
-    application: Application,
-    currencyStringProvider: CurrencyStringProvider
-) : StringProvider, CurrencyStringProvider by currencyStringProvider {
+    application: Application
+) : StringProvider {
 
     private val context: Context = application.applicationContext
 

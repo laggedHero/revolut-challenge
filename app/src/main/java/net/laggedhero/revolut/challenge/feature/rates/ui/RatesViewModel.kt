@@ -14,11 +14,11 @@ import net.laggedhero.revolut.challenge.core.onFailure
 import net.laggedhero.revolut.challenge.core.onSuccess
 import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProvider
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
+import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class RatesViewModel(
@@ -33,20 +33,20 @@ class RatesViewModel(
 
     private var disposable: Disposable? = null
 
-    private val currencyCodeSource = BehaviorSubject.create<CurrencyCode>()
-    private val appliedConversionSource = BehaviorSubject.create<CurrencyConversion>()
+    private val currencySource = BehaviorSubject.create<Currency>()
+    private val appliedConversionRateSource = BehaviorSubject.create<ConversionRate>()
 
     init {
         val currentCurrencyCode = currencyCodeProvider.current()
         _state = KMutableLiveData(
             RatesState(
                 loading = true,
-                selectedCurrencyCode = currentCurrencyCode,
-                appliedCurrencyConversion = CurrencyConversion(1F)
+                selectedCurrency = currentCurrencyCode,
+                appliedConversionRate = ConversionRate(1F)
             )
         )
-        selectCurrencyCode(currentCurrencyCode)
-        applyCurrencyConversion(CurrencyConversion(1F))
+        selectCurrency(currentCurrencyCode)
+        applyConversionRate(ConversionRate(1F))
     }
 
     private fun observe() {
@@ -54,8 +54,8 @@ class RatesViewModel(
             timedCurrencySource()
                 .doOnEach { notifyLoading() }
                 .flatMap { pair -> currencyRepositorySource(pair.first, pair.second) },
-            appliedConversionSource,
-            BiFunction<Result<(CurrencyConversion) -> RatesState>, CurrencyConversion, Result<RatesState>> { result, conversion ->
+            appliedConversionRateSource,
+            BiFunction<Result<(ConversionRate) -> RatesState>, ConversionRate, Result<RatesState>> { result, conversion ->
                 result.map { it(conversion) }
             }
         )
@@ -73,11 +73,11 @@ class RatesViewModel(
             }
     }
 
-    private fun timedCurrencySource(): Observable<Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> {
+    private fun timedCurrencySource(): Observable<Pair<Currency, (Rates) -> (ConversionRate) -> RatesState>> {
         return Observable.combineLatest(
             intervalSource(),
-            currencyCodeSource,
-            BiFunction<Long, CurrencyCode, Pair<CurrencyCode, (Rates) -> (CurrencyConversion) -> RatesState>> { _, currencyCode ->
+            currencySource,
+            BiFunction<Long, Currency, Pair<Currency, (Rates) -> (ConversionRate) -> RatesState>> { _, currencyCode ->
                 Pair(currencyCode, curriedRatesState(currencyCode))
             }
         )
@@ -93,23 +93,23 @@ class RatesViewModel(
     }
 
     private fun currencyRepositorySource(
-        currencyCode: CurrencyCode,
-        curriedState: (Rates) -> (CurrencyConversion) -> RatesState
-    ): Observable<Result<(CurrencyConversion) -> RatesState>> {
+        currencyCode: Currency,
+        curriedState: (Rates) -> (ConversionRate) -> RatesState
+    ): Observable<Result<(ConversionRate) -> RatesState>> {
         return currencyRepository.ratesFor(currencyCode)
             .map { result -> result.map { curriedState(it) } }
             .subscribeOn(schedulerProvider.io())
             .toObservable()
     }
 
-    fun selectCurrencyCode(currencyCode: CurrencyCode) {
+    fun selectCurrency(currency: Currency) {
         disposable?.dispose()
-        currencyCodeSource.onNext(currencyCode)
+        currencySource.onNext(currency)
         observe()
     }
 
-    fun applyCurrencyConversion(currencyConversion: CurrencyConversion) {
-        appliedConversionSource.onNext(currencyConversion)
+    fun applyConversionRate(conversionRate: ConversionRate) {
+        appliedConversionRateSource.onNext(conversionRate)
     }
 
     override fun onCleared() {
@@ -120,32 +120,32 @@ class RatesViewModel(
 
 data class RatesState(
     val loading: Boolean,
-    val selectedCurrencyCode: CurrencyCode,
-    val appliedCurrencyConversion: CurrencyConversion,
+    val selectedCurrency: Currency,
+    val appliedConversionRate: ConversionRate,
     val rates: Rates? = null,
     val error: String? = null
 )
 
-private val curriedRatesState: (CurrencyCode) -> (Rates) -> (CurrencyConversion) -> RatesState =
+private val curriedRatesState: (Currency) -> (Rates) -> (ConversionRate) -> RatesState =
     { currencyCode ->
         { rates ->
             { appliedConversion ->
                 RatesState(
                     loading = false,
-                    selectedCurrencyCode = currencyCode,
-                    appliedCurrencyConversion = appliedConversion,
+                    selectedCurrency = currencyCode,
+                    appliedConversionRate = appliedConversion,
                     rates = rates.withConversion(appliedConversion)
                 )
             }
         }
     }
 
-private fun Rates.withConversion(appliedConversion: CurrencyConversion): Rates {
+private fun Rates.withConversion(appliedConversion: ConversionRate): Rates {
     return copy(
-        baseCurrency = baseCurrency.copy(appliedConversion = appliedConversion),
+        baseRate = baseRate.copy(conversionRate = appliedConversion),
         rates = rates.map {
             it.copy(
-                appliedConversion = CurrencyConversion(it.referenceRate.value * appliedConversion.value)
+                conversionRate = ConversionRate(it.referenceRate.value * appliedConversion.value)
             )
         }
     )

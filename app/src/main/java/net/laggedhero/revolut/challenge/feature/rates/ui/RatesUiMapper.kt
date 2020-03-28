@@ -1,27 +1,26 @@
 package net.laggedhero.revolut.challenge.feature.rates.ui
 
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
-import net.laggedhero.revolut.challenge.feature.rates.domain.Currency
+import net.laggedhero.revolut.challenge.feature.rates.domain.Rate
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
 import java.util.*
 
 class RatesUiMapper(private val stringProvider: StringProvider) {
     fun map(rates: Rates): List<RatesListUiItem> {
-        return listOf(rates.baseCurrency.toRatesListUiItem()) + rates.rates.map { it.toRatesListUiItem() }
+        return listOf(rates.baseRate.toRatesListUiItem()) + rates.rates.map { it.toRatesListUiItem() }
     }
 
-    private fun Currency.toRatesListUiItem(): RatesListUiItem {
+    private fun Rate.toRatesListUiItem(): RatesListUiItem {
         return RatesListUiItem(
-            flagUrl = currencyCode.toFlagUrl(),
-            currencyCode = currencyCode.value,
-            currencyName = stringProvider.name(currencyCode),
-            currencyConversion = "%.2f".format(appliedConversion.value)
+            flagUrl = currency.toFlagUrl(),
+            currencyCode = currency.currencyCode,
+            currencyName = currency.displayName,
+            currencyConversion = "%.2f".format(conversionRate.value)
         )
     }
 
-    private fun CurrencyCode.toFlagUrl(): String {
-        return FLAG_BASE_URL + value.toLowerCase(Locale.ROOT) + FLAG_FILE_EXT
+    private fun Currency.toFlagUrl(): String {
+        return FLAG_BASE_URL + currencyCode.toLowerCase(Locale.ROOT) + FLAG_FILE_EXT
     }
 
     companion object {

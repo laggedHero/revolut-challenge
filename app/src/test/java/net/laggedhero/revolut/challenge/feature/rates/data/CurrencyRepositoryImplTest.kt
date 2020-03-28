@@ -2,12 +2,12 @@ package net.laggedhero.revolut.challenge.feature.rates.data
 
 import io.reactivex.Single
 import net.laggedhero.revolut.challenge.core.Result
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
-import net.laggedhero.revolut.challenge.feature.rates.domain.Currency
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyConversion
-import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyReferenceRate
+import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
+import net.laggedhero.revolut.challenge.feature.rates.domain.Rate
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
+import net.laggedhero.revolut.challenge.feature.rates.domain.ReferenceRate
 import org.junit.Test
+import java.util.*
 
 class CurrencyRepositoryImplTest {
 
@@ -20,7 +20,7 @@ class CurrencyRepositoryImplTest {
 
         val sut = CurrencyRepositoryImpl(api)
 
-        sut.ratesFor(CurrencyCode.EUR).test()
+        sut.ratesFor(Currency.getInstance("EUR")).test()
             .assertValue(Result.Failure(error))
             .dispose()
     }
@@ -39,23 +39,23 @@ class CurrencyRepositoryImplTest {
         )
 
         val expectedRates = Rates(
-            baseCurrency = Currency(
-                CurrencyCode.EUR,
-                CurrencyReferenceRate(1F),
-                CurrencyConversion(1F)
+            baseRate = Rate(
+                Currency.getInstance("EUR"),
+                ReferenceRate(1F),
+                ConversionRate(1F)
             ),
             rates = listOf(
-                Currency(
-                    CurrencyCode.USD,
-                    CurrencyReferenceRate(1.13F),
-                    CurrencyConversion(1.13F)
+                Rate(
+                    Currency.getInstance("USD"),
+                    ReferenceRate(1.13F),
+                    ConversionRate(1.13F)
                 )
             )
         )
 
         val sut = CurrencyRepositoryImpl(api)
 
-        sut.ratesFor(CurrencyCode.EUR).test()
+        sut.ratesFor(Currency.getInstance("EUR")).test()
             .assertValue(Result.Success(expectedRates))
             .dispose()
     }

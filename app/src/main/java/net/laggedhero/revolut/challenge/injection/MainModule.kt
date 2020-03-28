@@ -12,7 +12,10 @@ import net.laggedhero.revolut.challenge.core.injection.fragment.DaggerFragmentFa
 import net.laggedhero.revolut.challenge.core.injection.fragment.FragmentKey
 import net.laggedhero.revolut.challenge.core.injection.viewmodel.DaggerViewModelFactory
 import net.laggedhero.revolut.challenge.core.injection.viewmodel.ViewModelKey
-import net.laggedhero.revolut.challenge.core.provider.*
+import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
+import net.laggedhero.revolut.challenge.core.provider.SchedulerProviderImpl
+import net.laggedhero.revolut.challenge.core.provider.StringProvider
+import net.laggedhero.revolut.challenge.core.provider.StringProviderImpl
 import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProvider
 import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProviderImpl
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
@@ -64,16 +67,10 @@ object MainModule {
     }
 
     @Provides
-    fun providesCurrencyStringProvider(application: Application): CurrencyStringProvider {
-        return CurrencyStringProviderImpl(application)
-    }
-
-    @Provides
     fun providesStringProvider(
-        application: Application,
-        currencyStringProvider: CurrencyStringProvider
+        application: Application
     ): StringProvider {
-        return StringProviderImpl(application, currencyStringProvider)
+        return StringProviderImpl(application)
     }
 
     @Provides

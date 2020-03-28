@@ -1,13 +1,13 @@
 package net.laggedhero.revolut.challenge.feature.rates.domain
 
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
+import java.util.*
 
-data class Currency(
-    val currencyCode: CurrencyCode,
-    val referenceRate: CurrencyReferenceRate,
-    val appliedConversion: CurrencyConversion
+data class Rate(
+    val currency: Currency,
+    val referenceRate: ReferenceRate,
+    val conversionRate: ConversionRate
 )
 
-inline class CurrencyReferenceRate(val value: Float)
+inline class ReferenceRate(val value: Float)
 
-inline class CurrencyConversion(val value: Float)
+inline class ConversionRate(val value: Float)

@@ -1,7 +1,7 @@
 package net.laggedhero.revolut.challenge.feature.rates
 
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
+import java.util.*
 
 interface CurrencyCodeProvider {
-    fun current(): CurrencyCode
+    fun current(): Currency
 }

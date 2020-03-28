@@ -5,12 +5,12 @@ import io.reactivex.Single
 import io.reactivex.schedulers.TestScheduler
 import net.laggedhero.revolut.challenge.core.provider.FakeSchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.FakeStringProvider
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
 import net.laggedhero.revolut.challenge.feature.rates.FakeCurrencyCodeProvider
 import net.laggedhero.revolut.challenge.feature.rates.domain.*
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class RatesViewModelTest {
@@ -27,11 +27,11 @@ class RatesViewModelTest {
             FakeCurrencyRepository(),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         Assert.assertEquals(
-            RatesState(true, CurrencyCode.EUR, CurrencyConversion(1F)),
+            RatesState(true, Currency.getInstance("EUR"), ConversionRate(1F)),
             sut.state.value
         )
     }
@@ -43,8 +43,8 @@ class RatesViewModelTest {
         val sut = RatesViewModel(
             FakeCurrencyRepository { Single.error(Throwable("Error")) },
             FakeSchedulerProvider(testScheduler),
-            FakeStringProvider({ "Error message" }),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeStringProvider { "Error message" },
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -52,8 +52,8 @@ class RatesViewModelTest {
         Assert.assertEquals(
             RatesState(
                 loading = false,
-                selectedCurrencyCode = CurrencyCode.EUR,
-                appliedCurrencyConversion = CurrencyConversion(1F),
+                selectedCurrency = Currency.getInstance("EUR"),
+                appliedConversionRate = ConversionRate(1F),
                 error = "Error message"
             ),
             sut.state.value
@@ -83,8 +83,8 @@ class RatesViewModelTest {
         val sut = RatesViewModel(
             FakeCurrencyRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
-            FakeStringProvider({ "Error message" }),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeStringProvider { "Error message" },
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -107,7 +107,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -121,9 +121,9 @@ class RatesViewModelTest {
         val rates = Factory.createRates()
 
         val expectedRates = Factory.createRates(
-            Factory.createCurrency(CurrencyCode.EUR, 1F, 2F),
+            Factory.createRate(Currency.getInstance("EUR"), 1F, 2F),
             listOf(
-                Factory.createCurrency(CurrencyCode.USD, 1.13F, 2.26F)
+                Factory.createRate(Currency.getInstance("USD"), 1.13F, 2.26F)
             )
         )
 
@@ -131,12 +131,12 @@ class RatesViewModelTest {
             FakeCurrencyRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
-        sut.applyCurrencyConversion(CurrencyConversion(2F))
+        sut.applyConversionRate(ConversionRate(2F))
 
         Assert.assertEquals(expectedRates, sut.state.value.rates)
     }
@@ -148,9 +148,9 @@ class RatesViewModelTest {
         val eurRates = Factory.createRates()
 
         val usdRates = Factory.createRates(
-            Factory.createCurrency(CurrencyCode.USD, 1F, 1F),
+            Factory.createRate(Currency.getInstance("USD"), 1F, 1F),
             listOf(
-                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 0.9F)
+                Factory.createRate(Currency.getInstance("EUR"), 0.9F, 0.9F)
             )
         )
 
@@ -169,9 +169,9 @@ class RatesViewModelTest {
         }
 
         val expectedRates = Factory.createRates(
-            Factory.createCurrency(CurrencyCode.USD, 1F, 1F),
+            Factory.createRate(Currency.getInstance("USD"), 1F, 1F),
             listOf(
-                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 0.9F)
+                Factory.createRate(Currency.getInstance("EUR"), 0.9F, 0.9F)
             )
         )
 
@@ -179,12 +179,12 @@ class RatesViewModelTest {
             FakeCurrencyRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
-        sut.selectCurrencyCode(CurrencyCode.USD)
+        sut.selectCurrency(Currency.getInstance("USD"))
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
@@ -198,9 +198,9 @@ class RatesViewModelTest {
         val eurRates = Factory.createRates()
 
         val usdRates = Factory.createRates(
-            Factory.createCurrency(CurrencyCode.USD, 1F, 1F),
+            Factory.createRate(Currency.getInstance("USD"), 1F, 1F),
             listOf(
-                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 0.9F)
+                Factory.createRate(Currency.getInstance("EUR"), 0.9F, 0.9F)
             )
         )
 
@@ -219,9 +219,9 @@ class RatesViewModelTest {
         }
 
         val expectedRates = Factory.createRates(
-            Factory.createCurrency(CurrencyCode.USD, 1F, 2F),
+            Factory.createRate(Currency.getInstance("USD"), 1F, 2F),
             listOf(
-                Factory.createCurrency(CurrencyCode.EUR, 0.9F, 1.8F)
+                Factory.createRate(Currency.getInstance("EUR"), 0.9F, 1.8F)
             )
         )
 
@@ -229,13 +229,13 @@ class RatesViewModelTest {
             FakeCurrencyRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(CurrencyCode.EUR)
+            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
-        sut.applyCurrencyConversion(CurrencyConversion(2F))
-        sut.selectCurrencyCode(CurrencyCode.USD)
+        sut.applyConversionRate(ConversionRate(2F))
+        sut.selectCurrency(Currency.getInstance("USD"))
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
 
@@ -244,30 +244,30 @@ class RatesViewModelTest {
 
     object Factory {
         fun createRates(
-            baseCurrency: Currency = createCurrency(
-                CurrencyCode.EUR, 1F, 1F
+            baseRate: Rate = createRate(
+                Currency.getInstance("EUR"), 1F, 1F
             ),
-            rates: List<Currency> = listOf(
-                createCurrency(
-                    CurrencyCode.USD, 1.13F, 1.13F
+            rates: List<Rate> = listOf(
+                createRate(
+                    Currency.getInstance("USD"), 1.13F, 1.13F
                 )
             )
         ): Rates {
             return Rates(
-                baseCurrency = baseCurrency,
+                baseRate = baseRate,
                 rates = rates
             )
         }
 
-        fun createCurrency(
-            code: CurrencyCode,
+        fun createRate(
+            currency: Currency,
             rate: Float,
             conversion: Float
-        ): Currency {
-            return Currency(
-                code,
-                CurrencyReferenceRate(rate),
-                CurrencyConversion(conversion)
+        ): Rate {
+            return Rate(
+                currency,
+                ReferenceRate(rate),
+                ConversionRate(conversion)
             )
         }
     }

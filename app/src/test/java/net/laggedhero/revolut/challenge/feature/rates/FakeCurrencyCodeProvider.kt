@@ -1,11 +1,11 @@
 package net.laggedhero.revolut.challenge.feature.rates
 
-import net.laggedhero.revolut.challenge.domain.CurrencyCode
+import java.util.*
 
 class FakeCurrencyCodeProvider(
-    private val current: CurrencyCode? = null
+    private val current: Currency? = null
 ) : CurrencyCodeProvider {
-    override fun current(): CurrencyCode {
+    override fun current(): Currency {
         return current ?: throw Throwable(("FakeCurrencyCodeProvider: undefined currency"))
     }
 }

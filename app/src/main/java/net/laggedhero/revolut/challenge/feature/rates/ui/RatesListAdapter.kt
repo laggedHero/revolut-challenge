@@ -13,7 +13,7 @@ import net.laggedhero.revolut.challenge.databinding.RatesListItemViewBinding
 
 class RatesListAdapter(
     private val onSelectCurrency: (String) -> Unit,
-    private val onApplyConversion: (String) -> Unit
+    private val onApplyConversionRate: (String) -> Unit
 ) : ListAdapter<RatesListUiItem, RatesListAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -22,7 +22,7 @@ class RatesListAdapter(
                 LayoutInflater.from(parent.context), parent, false
             ),
             onSelectCurrency,
-            onApplyConversion
+            onApplyConversionRate
         )
     }
 
@@ -37,8 +37,8 @@ class RatesListAdapter(
 
     class ViewHolder(
         private val binding: RatesListItemViewBinding,
-        private val onSelectCurrencyCode: (String) -> Unit,
-        private val onApplyCurrencyConversion: (String) -> Unit
+        private val onSelectCurrency: (String) -> Unit,
+        private val onApplyConversionRate: (String) -> Unit
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -46,13 +46,13 @@ class RatesListAdapter(
             binding.ratesListItemCurrencyConversion.onFocusChangeListener =
                 View.OnFocusChangeListener { _, hasFocus ->
                     if (hasFocus) {
-                        onSelectCurrencyCode(binding.ratesListItemCurrencyCode.text.toString())
+                        onSelectCurrency(binding.ratesListItemCurrencyCode.text.toString())
                     }
                 }
 
             binding.ratesListItemCurrencyConversion.doAfterTextChanged {
                 if (binding.ratesListItemCurrencyConversion.hasFocus()) {
-                    onApplyCurrencyConversion(it.toString())
+                    onApplyConversionRate(it.toString())
                 }
             }
         }
