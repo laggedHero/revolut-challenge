@@ -5,7 +5,7 @@ import io.reactivex.Single
 import io.reactivex.schedulers.TestScheduler
 import net.laggedhero.revolut.challenge.core.provider.FakeSchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.FakeStringProvider
-import net.laggedhero.revolut.challenge.feature.rates.FakeCurrencyCodeProvider
+import net.laggedhero.revolut.challenge.feature.rates.FakeCurrencyProvider
 import net.laggedhero.revolut.challenge.feature.rates.domain.*
 import org.junit.Assert
 import org.junit.Rule
@@ -27,7 +27,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository(),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         Assert.assertEquals(
@@ -44,7 +44,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository { Single.error(Throwable("Error")) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider { "Error message" },
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -84,7 +84,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider { "Error message" },
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -107,7 +107,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -131,7 +131,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository { Single.just(rates) },
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -179,7 +179,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)
@@ -229,7 +229,7 @@ class RatesViewModelTest {
             FakeCurrencyRepository(testSingleProducer),
             FakeSchedulerProvider(testScheduler),
             FakeStringProvider(),
-            FakeCurrencyCodeProvider(Currency.getInstance("EUR"))
+            FakeCurrencyProvider(Currency.getInstance("EUR"))
         )
 
         testScheduler.advanceTimeBy(0, TimeUnit.SECONDS)

@@ -14,7 +14,7 @@ import net.laggedhero.revolut.challenge.core.onFailure
 import net.laggedhero.revolut.challenge.core.onSuccess
 import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
-import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProvider
+import net.laggedhero.revolut.challenge.feature.rates.CurrencyProvider
 import net.laggedhero.revolut.challenge.feature.rates.domain.ConversionRate
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
 import net.laggedhero.revolut.challenge.feature.rates.domain.Rates
@@ -25,7 +25,7 @@ class RatesViewModel(
     private val currencyRepository: CurrencyRepository,
     private val schedulerProvider: SchedulerProvider,
     private val stringProvider: StringProvider,
-    currencyCodeProvider: CurrencyCodeProvider
+    currencyProvider: CurrencyProvider
 ) : ViewModel() {
 
     private val _state: KMutableLiveData<RatesState>
@@ -37,7 +37,7 @@ class RatesViewModel(
     private val appliedConversionRateSource = BehaviorSubject.create<ConversionRate>()
 
     init {
-        val currentCurrencyCode = currencyCodeProvider.current()
+        val currentCurrencyCode = currencyProvider.current()
         _state = KMutableLiveData(
             RatesState(
                 loading = true,

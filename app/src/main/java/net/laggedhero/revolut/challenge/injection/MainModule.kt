@@ -16,8 +16,8 @@ import net.laggedhero.revolut.challenge.core.provider.SchedulerProvider
 import net.laggedhero.revolut.challenge.core.provider.SchedulerProviderImpl
 import net.laggedhero.revolut.challenge.core.provider.StringProvider
 import net.laggedhero.revolut.challenge.core.provider.StringProviderImpl
-import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProvider
-import net.laggedhero.revolut.challenge.feature.rates.CurrencyCodeProviderImpl
+import net.laggedhero.revolut.challenge.feature.rates.CurrencyProvider
+import net.laggedhero.revolut.challenge.feature.rates.CurrencyProviderImpl
 import net.laggedhero.revolut.challenge.feature.rates.domain.CurrencyRepository
 import net.laggedhero.revolut.challenge.feature.rates.ui.RatesFragment
 import net.laggedhero.revolut.challenge.feature.rates.ui.RatesUiMapper
@@ -49,10 +49,10 @@ object MainModule {
         currencyRepository: CurrencyRepository,
         schedulerProvider: SchedulerProvider,
         stringProvider: StringProvider,
-        currencyCodeProvider: CurrencyCodeProvider
+        currencyProvider: CurrencyProvider
     ): ViewModel {
         return RatesViewModel(
-            currencyRepository, schedulerProvider, stringProvider, currencyCodeProvider
+            currencyRepository, schedulerProvider, stringProvider, currencyProvider
         )
     }
 
@@ -74,8 +74,8 @@ object MainModule {
     }
 
     @Provides
-    fun providesCurrencyCodeProvider(): CurrencyCodeProvider {
-        return CurrencyCodeProviderImpl()
+    fun providesCurrencyCodeProvider(): CurrencyProvider {
+        return CurrencyProviderImpl()
     }
 
     @Provides

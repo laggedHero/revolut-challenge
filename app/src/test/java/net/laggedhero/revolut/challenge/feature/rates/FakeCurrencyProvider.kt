@@ -2,10 +2,10 @@ package net.laggedhero.revolut.challenge.feature.rates
 
 import java.util.*
 
-class FakeCurrencyCodeProvider(
+class FakeCurrencyProvider(
     private val current: Currency? = null
-) : CurrencyCodeProvider {
+) : CurrencyProvider {
     override fun current(): Currency {
-        return current ?: throw Throwable(("FakeCurrencyCodeProvider: undefined currency"))
+        return current ?: throw Throwable(("FakeCurrencyProvider: undefined currency"))
     }
 }
